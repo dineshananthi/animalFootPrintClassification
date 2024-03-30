@@ -1,6 +1,8 @@
 import gc
 import logging
+import os
 import sys
+from typing import List, Dict
 
 import torch
 import uvicorn
@@ -40,11 +42,20 @@ vistra_afp_classification_model = load_model()
 
 
 @app.post("/animal-footprint-classification")
-async def do_upload_file(image_path: Item) -> dict:
+async def do_upload_file(image_path: Item) -> List[Dict]:
     logging.info("Uploading image...{}".format(image_path.filePath))
+    result_list = []
     try:
-        result = await vistra_afp_classification(image_path.filePath, vistra_afp_classification_model)
-        return result
+        input_image_path = image_path.filePath
+        if input_image_path is not None and os.path.exists(input_image_path) and os.path.isdir(input_image_path):
+            for image in os.listdir(input_image_path):
+                file_path = os.path.join(input_image_path, image)
+                result = await vistra_afp_classification(file_path, vistra_afp_classification_model)
+                result_list.append(result)
+        else:
+            result = await vistra_afp_classification(image_path.filePath, vistra_afp_classification_model)
+            result_list.append(result)
+        return result_list
     except Exception as ex:
         logging.error(str(ex))
         raise ex
