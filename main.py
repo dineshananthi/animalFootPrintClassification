@@ -28,14 +28,18 @@ class Item(BaseModel):
 
 
 def load_model():
-    device = "cuda:0" if torch.cuda.is_available() else "cpu"
     model_path = '/home/dineshkumar.anandan@zucisystems.com/Downloads/vistra_animal_foot_print_class_1.pth'
-    model = vit_b_16(image_size=224, num_classes=13)
-    model.load_state_dict(torch.load(model_path, map_location=device))
-    model = model.to(device)
-    model.eval()
-    logging.info(f"Loaded model from {model_path} and device: {device}")
-    return model
+    try:
+        device = "cuda:0" if torch.cuda.is_available() else "cpu"
+        model = vit_b_16(image_size=224, num_classes=13)
+        model.load_state_dict(torch.load(model_path, map_location=device))
+        model = model.to(device)
+        model.eval()
+        logging.info(f"Loaded model from {model_path} and device: {device}")
+        return model
+    except Exception as e:
+        logging.error(f"Model load unsuccessfully {model_path}")
+        raise e
 
 
 vistra_afp_classification_model = load_model()
