@@ -15,9 +15,6 @@ async def vistra_afp_classification(image_path: str, vistra_afp_classification_m
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
     ])
-
-    # defining device for loading model and inference
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     try:
         if image_path is not None:
             if image_path.endswith('.jpg') or image_path.endswith('.png'):
@@ -36,15 +33,7 @@ async def vistra_afp_classification(image_path: str, vistra_afp_classification_m
                     confidence_score = probabilities.squeeze(0)[prediction_class].item()
                     prediction_class = prediction_class.item()
                     # starting results
-                    if prediction_class is not None and prediction_class >= 0:
-                        predicted_label = animal_dict.get(prediction_class)
-                        result_dict = {'inputImage': image_path, 'predictedClass': prediction_class,
-                                       'predictedLabel': str(predicted_label).upper(),
-                                       'confidenceScore': "{:.2f}".format(confidence_score * 100)}
-                    else:
-                        result_dict = {'inputImage': image_path, 'predictedClass': -1,
-                                       'predictedLabel': "UNKNOWN",
-                                       'confidenceScore': 0}
+                    result_dict = await result_validation(confidence_score, image_path, prediction_class)
                     logging.info(
                         "Classification completed for the image {} and output is {}".format(image_path, result_dict))
                 return result_dict
@@ -63,6 +52,19 @@ async def vistra_afp_classification(image_path: str, vistra_afp_classification_m
         del output
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
+
+
+async def result_validation(confidence_score, image_path, prediction_class):
+    if prediction_class is not None and prediction_class >= 0:
+        predicted_label = animal_dict.get(prediction_class)
+        result_dict = {'inputImage': image_path, 'predictedClass': prediction_class,
+                       'predictedLabel': str(predicted_label).upper(),
+                       'confidenceScore': "{:.2f}".format(confidence_score * 100)}
+    else:
+        result_dict = {'inputImage': image_path, 'predictedClass': -1,
+                       'predictedLabel': "UNKNOWN",
+                       'confidenceScore': 0}
+    return result_dict
 
 
 class ProjectException(Exception):
