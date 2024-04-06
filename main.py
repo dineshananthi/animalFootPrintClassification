@@ -6,11 +6,11 @@ from typing import List, Dict
 
 import torch
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile
 from pydantic import BaseModel
 from torchvision.models import vit_b_16
 
-from core.vistra_afp_classification import vistra_afp_classification
+from core.vistra_afp_classification import vistra_afp_classification, vistra_afp_classification_ui
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
@@ -25,6 +25,9 @@ def info():
 
 class Item(BaseModel):
     filePath: str
+
+
+"""Model loading part"""
 
 
 def load_model():
@@ -44,8 +47,10 @@ def load_model():
 
 vistra_afp_classification_model = load_model()
 
+"""API Part"""
 
-@app.post("/animal-footprint-classification")
+
+@app.post("/multi-animal-footprint-classification")
 async def do_upload_file(image_path: Item) -> List[Dict]:
     logging.info("Uploading image...{}".format(image_path.filePath))
     result_list = []
@@ -60,6 +65,20 @@ async def do_upload_file(image_path: Item) -> List[Dict]:
             result = await vistra_afp_classification(image_path.filePath, vistra_afp_classification_model)
             result_list.append(result)
         return result_list
+    except Exception as ex:
+        logging.error(str(ex))
+        raise ex
+    finally:
+        gc.collect()
+        torch.cuda.empty_cache()
+
+
+@app.post("/animal-footprint-classification/")
+async def do_upload_file(image_path: UploadFile) -> dict:
+    try:
+        file_bytes = await image_path.read()
+        result = await vistra_afp_classification_ui(file_bytes, vistra_afp_classification_model)
+        return result
     except Exception as ex:
         logging.error(str(ex))
         raise ex
