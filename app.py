@@ -74,7 +74,7 @@ def image_classification_page():
 
         if st.button('Classify', key="classify_button"):
             call_api(file_contents)
-        if st.button("Logout", key="logout_button"):
+        if st.button("Back", key="back_button"):
             st.session_state.logged_in = False
             st.session_state.logged_in = True
         if st.button("Logout", key="logout_button"):
