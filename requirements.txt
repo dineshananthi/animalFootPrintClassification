@@ -5,3 +5,4 @@ opencv-python==4.6.0.66
 uvicorn~=0.29.0
 pillow~=10.2.0
 pydantic~=2.6.4
+streamlit
