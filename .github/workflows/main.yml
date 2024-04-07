@@ -17,5 +17,5 @@ jobs:
       - name: Push to hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push --force https://dineshananthi:$HF_TOKEN@huggingface.co/spaces/HF_USERNAME/dineshananthi/vistra-animal-footprint-classification main
+        run: git push --force https://dineshananthi:$HF_TOKEN@huggingface.co/spaces/dineshananthi/vistra-animal-footprint-classification main
         
